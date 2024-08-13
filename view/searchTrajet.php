@@ -1,20 +1,28 @@
 <?php
-
 require_once(__DIR__.'/../controller/TrajetC.php');
 require_once(__DIR__.'/../model/Trajet.php');
 
 session_start();
 
-if (!isset($_SESSION["user_role"]) or $_SESSION["user_role"] != 1) {
-    http_response_code(403);
-    header("Location:../index.php");
-    exit();
+
+// create an instance of the controller
+$TrajetC = new TrajetController();
+
+$trajet = null;
+
+if (isset($_GET["depart"]) and !empty($_GET["depart"]) and
+    isset($_GET["arrivee"]) and !empty($_GET["arrivee"])) {
+        $depart = $_GET["depart"];
+        $arrivee = $_GET["arrivee"];
+
+        $sql = "SELECT * from pidev.trajet where depart = '$depart' and arrivee = '$arrivee'";
+        $db = config::getConnexion();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        $trajet = $query->fetch();
 }
 
-$id_conducteur = $_SESSION["user_id"];
-
-$trajetC = new TrajetController();
-$list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
 ?>
 
 <!DOCTYPE html>
@@ -57,14 +65,6 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
 				<nav id="nav">
 					<ul class="main-menu nav navbar-nav navbar-right">
 						<li><a href="index.php">Home</a></li>
-                        <li><a href="signIn.php">Sign In</a></li>
-                        <li><a href="addUser.php">Sign Up</a></li>
-                        <!--
-                        <li><a href="coures.html">Courses</a></li>
-                        <li><a href="devoir.html">Devoir</a></li>
-                        <li><a href="reclamation.html">Reclamation</a></li>
-                        <li><a href="formu.html">Forum</a></li>
-                        -->
 					</ul>
 				</nav>
                 </div>
@@ -81,29 +81,29 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
 					<div class="col-md-10 col-md-offset-1 text-center">
 						<ul class="hero-area-tree">
 							<li><a href="index.php">Home</a></li>
-							<li>Conducteur</li>
+							<li>Trajet</li>
 						</ul>
-						<h1 class="white-text">Gérez vos trajets</h1>
+						<h1 class="white-text">Rechercher un trajet</h1>
 
 					</div>
 				</div>
 			</div>
-
 		</div>
 
-<div class="user-table"> 
+        <?php
+
+if ($trajet != null) {
+?>
+<div> 
   <table border="1" align="center" width="60%">
      <tr>
-        <th>Id</th>
+        <th>id</th>
         <th>depart</th>
-        <th>arrivée</th>
+        <th>arrivee</th>
         <th>distance</th>
         <th>date départ</th>
-        <th>id conducteur</th>
+        <th>id_conducteur</th>
     </tr>
-    <?php
-    foreach ($list as $trajet) {
-    ?>
         <tr>
             <td><?= $trajet['id']; ?></td>
             <td><?= $trajet['depart']; ?></td>
@@ -111,29 +111,26 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
             <td><?= $trajet['distance']; ?></td>
             <td><?= $trajet['date_d']; ?></td>
             <td><?= $trajet['id_conducteur']; ?></td>
-            
-            <td align="center">
-                <form method="POST" action="updateTrajet.php">
-                    <input type="submit" name="update" value="Update">
-                    <input type="hidden" value=<?PHP echo $trajet['id']; ?> name="id">
-                </form>
-            </td>
-            <td>
-                <a href="deleteTrajet.php?id=<?php echo $trajet['id']; ?>">Delete</a>
-            </td>
-        </tr>
-        
-    <?php
-    }
-    ?>
+        </tr> 
   </table>
 </div>
+<?php
+}
+?>
 
-<form id="signupForm">
-    <button><a href="ajouterTrajet.php">Ajouter un trajet</a></button>
-    <button><a href="searchTrajet.php">Rechercher un trajet</a></button>
-    <button><a href="sortTrajet.php">Trier les trajets</a></button>
-</form>
+<div class="searchForm">
+    <form action="" method="GET">
+        <label for="depart">Départ</label>
+        <input type="text" name="depart" id="depart">
+
+        <label for="arrivee">Arrivée</label>
+        <input type="text" name="arrivee" id="arrivee">
+
+
+        <button id="searchButton" type="submit">Rechercher</button>
+    </form>
+</div>
+
 
 
 

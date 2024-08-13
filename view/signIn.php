@@ -35,6 +35,7 @@ else if (isset($_POST["name"]) and isset($_POST["password"])) {
             $user = $query->fetch();
             if ($user != null) {
                 $_SESSION["user_role"] = $user["role"];
+                $_SESSION["user_id"] = $user["id"];
             }
         } catch (Exception $e) {
             die('Error: ' . $e->getMessage());

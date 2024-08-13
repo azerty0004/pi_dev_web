@@ -1,20 +1,33 @@
 <?php
-
 require_once(__DIR__.'/../controller/TrajetC.php');
 require_once(__DIR__.'/../model/Trajet.php');
 
 session_start();
 
-if (!isset($_SESSION["user_role"]) or $_SESSION["user_role"] != 1) {
-    http_response_code(403);
-    header("Location:../index.php");
-    exit();
+
+function sortTrajets($criteria) {
+    $db = config::getConnexion();
+    $sql = "SELECT * from pidev.trajet ORDER BY $criteria";
+    $req = $db->prepare($sql);
+    try {
+        $req->execute();
+        $result = $req->fetchAll();
+    }
+    catch (Exception $e) {
+        die("Error: " . $e->getMessage());
+    }
+
+    return $result;
 }
 
-$id_conducteur = $_SESSION["user_id"];
+$criteria = "null";
 
-$trajetC = new TrajetController();
-$list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
+if (isset($_GET["criteria"]) and !empty($_GET["criteria"])) {
+    $criteria = $_GET["criteria"];
+}
+
+$list = sortTrajets($criteria);
+
 ?>
 
 <!DOCTYPE html>
@@ -57,14 +70,6 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
 				<nav id="nav">
 					<ul class="main-menu nav navbar-nav navbar-right">
 						<li><a href="index.php">Home</a></li>
-                        <li><a href="signIn.php">Sign In</a></li>
-                        <li><a href="addUser.php">Sign Up</a></li>
-                        <!--
-                        <li><a href="coures.html">Courses</a></li>
-                        <li><a href="devoir.html">Devoir</a></li>
-                        <li><a href="reclamation.html">Reclamation</a></li>
-                        <li><a href="formu.html">Forum</a></li>
-                        -->
 					</ul>
 				</nav>
                 </div>
@@ -81,25 +86,27 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
 					<div class="col-md-10 col-md-offset-1 text-center">
 						<ul class="hero-area-tree">
 							<li><a href="index.php">Home</a></li>
-							<li>Conducteur</li>
+							<li>Trajet</li>
 						</ul>
-						<h1 class="white-text">Gérez vos trajets</h1>
+						<h1 class="white-text">Rechercher un trajet</h1>
 
 					</div>
 				</div>
 			</div>
-
 		</div>
 
-<div class="user-table"> 
+<div> 
+
+
+<div> 
   <table border="1" align="center" width="60%">
      <tr>
         <th>Id</th>
-        <th>depart</th>
-        <th>arrivée</th>
-        <th>distance</th>
-        <th>date départ</th>
-        <th>id conducteur</th>
+        <th>Départ</th>
+        <th>Arrivée</th>
+        <th>Distance</th>
+        <th>Date Départ</th>
+        <th>Id Conducteur</th>
     </tr>
     <?php
     foreach ($list as $trajet) {
@@ -111,29 +118,29 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
             <td><?= $trajet['distance']; ?></td>
             <td><?= $trajet['date_d']; ?></td>
             <td><?= $trajet['id_conducteur']; ?></td>
-            
-            <td align="center">
-                <form method="POST" action="updateTrajet.php">
-                    <input type="submit" name="update" value="Update">
-                    <input type="hidden" value=<?PHP echo $trajet['id']; ?> name="id">
-                </form>
-            </td>
-            <td>
-                <a href="deleteTrajet.php?id=<?php echo $trajet['id']; ?>">Delete</a>
-            </td>
-        </tr>
-        
+        </tr> 
     <?php
     }
     ?>
   </table>
 </div>
 
-<form id="signupForm">
-    <button><a href="ajouterTrajet.php">Ajouter un trajet</a></button>
-    <button><a href="searchTrajet.php">Rechercher un trajet</a></button>
-    <button><a href="sortTrajet.php">Trier les trajets</a></button>
-</form>
+
+<form action="" method="GET">
+    <div class="sortForm">
+        <label for="criteria">Critère de tri</label>
+        <select id="etat" name="criteria" required>
+            <option value="id">Tri selon l'id</option>
+            <option value="depart">Tri selon le départ</option>
+            <option value="arrivee">Tri selon l'arrivée</option>
+            <option value="distance">Tri selon la distance</option>
+            <option value="date_d">Tri selon la date de départ</option>
+            <option value="id_conducteur">Tri selon l'id du conducteur</option>
+        </select>
+    </div>
+
+    <button id="sortButton" type="submit">Trier</button>
+</form> 
 
 
 

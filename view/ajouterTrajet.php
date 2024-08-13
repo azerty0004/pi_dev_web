@@ -1,5 +1,4 @@
 <?php
-
 require_once(__DIR__.'/../controller/TrajetC.php');
 require_once(__DIR__.'/../model/Trajet.php');
 
@@ -11,10 +10,40 @@ if (!isset($_SESSION["user_role"]) or $_SESSION["user_role"] != 1) {
     exit();
 }
 
-$id_conducteur = $_SESSION["user_id"];
+//var_dump($_POST);
 
-$trajetC = new TrajetController();
-$list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
+// create an instance of the controller
+$TrajetC = new TrajetController();
+if (
+    isset($_POST["depart"]) &&
+    isset($_POST["arrivee"]) &&
+    isset($_POST["distance"]) &&
+    isset($_SESSION["user_id"]) &&
+    isset($_POST["date_d"])) {
+
+    $depart = $_POST["depart"];
+    $arrivee = $_POST["arrivee"];
+    $distance = $_POST["distance"];
+    $id_conducteur = $_SESSION["user_id"];
+    $date_d = $_POST["date_d"];
+
+    
+    $Trajet = new Trajet(
+        null,
+        $depart,
+        $arrivee,
+        $distance,
+        $date_d,
+        $id_conducteur,
+    );
+
+
+    $TrajetC->addTrajet($Trajet);
+
+    header("Location:conducteur.php");
+    exit();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -57,14 +86,6 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
 				<nav id="nav">
 					<ul class="main-menu nav navbar-nav navbar-right">
 						<li><a href="index.php">Home</a></li>
-                        <li><a href="signIn.php">Sign In</a></li>
-                        <li><a href="addUser.php">Sign Up</a></li>
-                        <!--
-                        <li><a href="coures.html">Courses</a></li>
-                        <li><a href="devoir.html">Devoir</a></li>
-                        <li><a href="reclamation.html">Reclamation</a></li>
-                        <li><a href="formu.html">Forum</a></li>
-                        -->
 					</ul>
 				</nav>
                 </div>
@@ -81,9 +102,9 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
 					<div class="col-md-10 col-md-offset-1 text-center">
 						<ul class="hero-area-tree">
 							<li><a href="index.php">Home</a></li>
-							<li>Conducteur</li>
+							<li>Trajet</li>
 						</ul>
-						<h1 class="white-text">Gérez vos trajets</h1>
+						<h1 class="white-text">Ajouter un trajet</h1>
 
 					</div>
 				</div>
@@ -91,49 +112,31 @@ $list = $trajetC->showTrajetBy_Id_Conducteur($id_conducteur);
 
 		</div>
 
-<div class="user-table"> 
-  <table border="1" align="center" width="60%">
-     <tr>
-        <th>Id</th>
-        <th>depart</th>
-        <th>arrivée</th>
-        <th>distance</th>
-        <th>date départ</th>
-        <th>id conducteur</th>
-    </tr>
-    <?php
-    foreach ($list as $trajet) {
-    ?>
-        <tr>
-            <td><?= $trajet['id']; ?></td>
-            <td><?= $trajet['depart']; ?></td>
-            <td><?= $trajet['arrivee']; ?></td>
-            <td><?= $trajet['distance']; ?></td>
-            <td><?= $trajet['date_d']; ?></td>
-            <td><?= $trajet['id_conducteur']; ?></td>
-            
-            <td align="center">
-                <form method="POST" action="updateTrajet.php">
-                    <input type="submit" name="update" value="Update">
-                    <input type="hidden" value=<?PHP echo $trajet['id']; ?> name="id">
-                </form>
-            </td>
-            <td>
-                <a href="deleteTrajet.php?id=<?php echo $trajet['id']; ?>">Delete</a>
-            </td>
-        </tr>
-        
-    <?php
-    }
-    ?>
-  </table>
-</div>
+        <!-- /Hero-area -->
+        <form id="signupForm" action="" method="POST">
+            <div>
+                <label for="depart">depart</label>
+                <input type="text" id="depart" name="depart" maxlength=20 required>
+            </div>
 
-<form id="signupForm">
-    <button><a href="ajouterTrajet.php">Ajouter un trajet</a></button>
-    <button><a href="searchTrajet.php">Rechercher un trajet</a></button>
-    <button><a href="sortTrajet.php">Trier les trajets</a></button>
-</form>
+            <div>
+                <label for="arrivee">arrivée</label>
+                <input type="text" id="arrivee" name="arrivee" required>
+            </div>
+            <div>
+                <label for="distance">distance</label>
+                <input type="text" id="distance" name="distance" required>
+            </div>
+
+            <div>
+                <label for="date_d">date départ</label>
+                <input type="text" id="date_d" name="date_d" required>
+            </div>
+
+            <br/>
+
+            <button type="submit">Ajoutez un trajet</button>
+        </form>
 
 
 
